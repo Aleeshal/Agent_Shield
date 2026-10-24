@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AgentShield</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">AgentShield <span class="tag">test · detect · fix · retest</span></div>
+    <button id="runBtn" class="btn">Run tests</button>
+  </header>
+
+  <main>
+    <section id="summary" class="cards"></section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Test results</h2>
+        <div id="filters" class="filters"></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Category</th><th>Prompt</th><th>Outcome</th></tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="detail" class="panel hidden"></section>
+
+    <p class="note">Scores describe performance on this test suite only. They are not a guarantee of security.</p>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
