@@ -10,7 +10,7 @@ AgentShield is a web app that tests a \*\*sample chatbot\*\* for prompt injectio
 
 
 
-\- Built for the \*\*Nebius x NVIDIA Global AI Hackathon\*\* by a team of 2 in 7 days.
+\- Built for the \*\*Nebius x NVIDIA Global AI Hackathon\*\* by a team of 2 .
 
 \- Core loop: \*\*test, detect, fix, retest.\*\*
 
