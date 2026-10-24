@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AgentShield</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+  html, body { margin: 0; padding: 0; }
+  body { overscroll-behavior: none; }
+  ::-webkit-scrollbar { height: 8px; width: 8px; }
+  ::-webkit-scrollbar-thumb { background: #363341; border-radius: 8px; }
+  textarea:focus { outline: none; }
+</style>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { darkMode: "class", theme: { extend: {
+  colors: {"surface-variant":"#363341","surface-tint":"#d2bbff","on-surface":"#e7dff3","surface-container":"#211e2c","inverse-surface":"#e7dff3","background":"#15111f","tertiary-fixed-dim":"#ffb2b8","primary":"#d2bbff","surface":"#15111f","primary-container":"#7c3aed","secondary-fixed-dim":"#aad600","on-primary-container":"#ede0ff","on-tertiary":"#67001e","outline-variant":"#4a4455","on-background":"#e7dff3","on-secondary-container":"#465900","on-error":"#690005","tertiary":"#ffb2b8","secondary-container":"#aad600","on-secondary":"#283500","error":"#ffb4ab","surface-container-highest":"#363341","surface-dim":"#15111f","tertiary-container":"#c61f47","on-tertiary-container":"#ffdedf","surface-container-lowest":"#0f0c19","error-container":"#93000a","surface-container-high":"#2b2836","on-surface-variant":"#ccc3d8","on-primary":"#3f008e","surface-container-low":"#1d1a27","surface-bright":"#3b3746","secondary-fixed":"#c5f331","primary-fixed":"#eaddff","primary-fixed-dim":"#d2bbff","inverse-primary":"#732ee4","outline":"#958da1","secondary":"#c5f331","on-error-container":"#ffdad6"},
+  borderRadius: {"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},
+  fontFamily: {"display-sm":["Space Grotesk"],"code-md":["JetBrains Mono"],"body-sm":["Inter"],"display-lg":["Space Grotesk"],"headline-md":["Space Grotesk"],"code-sm":["JetBrains Mono"],"badge-label":["JetBrains Mono"],"code-lg":["JetBrains Mono"],"headline-sm":["Space Grotesk"],"body-md":["Inter"]},
+  fontSize: {"display-sm":["24px",{"lineHeight":"32px","letterSpacing":"-0.015em","fontWeight":"600"}],"code-md":["12px",{"lineHeight":"16px","fontWeight":"400"}],"body-sm":["12px",{"lineHeight":"16px","fontWeight":"400"}],"display-lg":["32px",{"lineHeight":"40px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-md":["18px",{"lineHeight":"24px","letterSpacing":"-0.01em","fontWeight":"600"}],"code-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.02em","fontWeight":"400"}],"badge-label":["10px",{"lineHeight":"12px","letterSpacing":"0.06em","fontWeight":"600"}],"code-lg":["13px",{"lineHeight":"18px","fontWeight":"500"}],"headline-sm":["15px",{"lineHeight":"20px","letterSpacing":"-0.005em","fontWeight":"600"}],"body-md":["13px",{"lineHeight":"18px","fontWeight":"400"}]}
+}}};
+</script>
+</head>
+<body class="bg-surface font-body-md text-on-surface antialiased selection:bg-primary selection:text-on-primary">
+
+<header class="fixed top-0 left-0 right-0 z-50 h-16 bg-surface-container-lowest/90 backdrop-blur-xl border-b border-outline-variant/20">
+  <div class="w-full h-16 px-6 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center shadow-[0_0_12px_rgba(124,58,237,0.45)]">
+        <span class="material-symbols-outlined text-on-primary-container text-[20px]">shield</span>
+      </div>
+      <span class="font-headline-sm text-headline-sm tracking-wider uppercase">AgentShield</span>
+      <span class="hidden md:inline font-code-sm text-code-sm text-outline">test · detect · fix · retest</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="sampleChip" class="hidden px-2.5 py-1 rounded-full bg-primary-container/20 text-primary-fixed-dim font-badge-label text-badge-label uppercase" title="These are example results, not a real run">Sample data</span>
+      <button id="runBtn" class="flex items-center gap-1.5 bg-secondary text-on-secondary px-4 py-2 rounded-lg font-headline-sm text-headline-sm font-semibold hover:opacity-90 shadow-[0_0_12px_rgba(197,243,49,0.3)] transition-all cursor-pointer disabled:opacity-60 disabled:cursor-wait">
+        <span class="material-symbols-outlined text-[18px]">play_arrow</span><span id="runLabel">Run tests</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<aside class="hidden md:flex fixed left-0 top-16 bottom-0 w-64 bg-surface-container-lowest z-40 flex-col py-4 border-r border-outline-variant/20">
+  <div class="flex flex-col gap-3 px-4 py-4">
+    <div class="font-badge-label text-badge-label uppercase text-outline tracking-wider px-1">Navigation</div>
+    <nav class="flex flex-col gap-1.5">
+      <button data-nav="results"><span class="material-symbols-outlined text-[20px]">assessment</span><span>Results</span></button>
+      <button data-nav="setup"><span class="material-symbols-outlined text-[20px]">smart_toy</span><span>Chatbot setup</span></button>
+      <button data-nav="compare"><span class="material-symbols-outlined text-[20px]">compare_arrows</span><span>Compare</span></button>
+    </nav>
+  </div>
+</aside>
+
+<main class="md:pl-64 pt-16 min-h-screen relative overflow-hidden">
+  <div class="pointer-events-none absolute -top-40 right-1/4 w-[520px] h-[340px] bg-primary-container/10 rounded-full blur-[140px]"></div>
+  <div class="pointer-events-none absolute top-96 -left-20 w-[420px] h-[320px] bg-secondary/5 rounded-full blur-[130px]"></div>
+
+  <nav class="md:hidden relative flex gap-2 p-3 overflow-x-auto">
+    <button data-nav="results"><span class="material-symbols-outlined text-[20px]">assessment</span><span>Results</span></button>
+    <button data-nav="setup"><span class="material-symbols-outlined text-[20px]">smart_toy</span><span>Setup</span></button>
+    <button data-nav="compare"><span class="material-symbols-outlined text-[20px]">compare_arrows</span><span>Compare</span></button>
+  </nav>
+
+  <div class="relative p-4 flex flex-col gap-4">
+
+    <!-- RESULTS VIEW -->
+    <section id="view-results" class="flex flex-col gap-4">
+      <div id="emptyState" class="bg-surface-container-low rounded-xl p-10 text-center shadow-xl">
+        <span class="material-symbols-outlined text-primary text-[40px]">shield</span>
+        <div class="font-headline-md text-headline-md mt-2">No results yet</div>
+        <p class="text-on-surface-variant mt-1">Click <span class="text-secondary font-semibold">Run tests</span> to send the attack suite to the sample chatbot.</p>
+      </div>
+      <div id="stats" class="hidden grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3"></div>
+      <div id="banner"></div>
+      <div id="resultsGrid" class="hidden grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+        <div class="xl:col-span-7 flex flex-col bg-surface-container-lowest rounded-xl shadow-xl overflow-hidden">
+          <div class="p-3 bg-surface-container flex flex-wrap items-center justify-between gap-2">
+            <div class="font-headline-sm text-headline-sm font-semibold">Test results</div>
+            <div id="filters" class="flex flex-wrap gap-1.5"></div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead><tr class="bg-surface-container-low text-outline font-badge-label text-badge-label uppercase tracking-wider">
+                <th class="py-3 px-3">ID</th><th class="py-3 px-3">Category</th><th class="py-3 px-3">Attack prompt</th><th class="py-3 px-3 text-right">Outcome</th>
+              </tr></thead>
+              <tbody id="rows" class="divide-y divide-outline-variant/10 font-code-sm text-code-sm"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="detail" class="xl:col-span-5 flex flex-col bg-surface-container-lowest rounded-xl shadow-xl overflow-hidden"></div>
+      </div>
+      <p class="text-center text-outline font-code-sm text-code-sm">Scores describe performance on this test suite only. They are not a guarantee of security.</p>
+    </section>
+
+    <!-- SETUP VIEW -->
+    <section id="view-setup" class="hidden flex flex-col gap-4">
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+        <div class="xl:col-span-5 flex flex-col gap-4">
+          <div class="bg-surface-container-low rounded-xl p-4 shadow-xl">
+            <div class="font-headline-sm text-headline-sm font-semibold mb-3">Rules the chatbot must follow</div>
+            <ul id="rulesList" class="flex flex-col gap-2"></ul>
+          </div>
+          <div class="bg-surface-container-low rounded-xl p-4 shadow-xl">
+            <div class="font-badge-label text-badge-label uppercase text-outline tracking-wider mb-2">Protected data (fictional)</div>
+            <div id="protectedBox" class="font-code-lg text-code-lg text-tertiary bg-tertiary-container/10 border border-tertiary/30 rounded-lg p-3">hidden</div>
+          </div>
+        </div>
+        <div class="xl:col-span-7 flex flex-col bg-surface-container-lowest rounded-xl shadow-xl overflow-hidden">
+          <div class="p-3 bg-surface-container flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-[22px]">terminal</span>
+              <span class="font-headline-sm text-headline-sm font-semibold">Chatbot instructions</span>
+            </div>
+            <div class="flex gap-2">
+              <button id="saveBtn" class="px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface font-headline-sm text-headline-sm hover:bg-surface-container-high cursor-pointer">Save changes</button>
+              <button id="setupRunBtn" class="px-3 py-1.5 rounded-lg bg-secondary text-on-secondary font-headline-sm text-headline-sm font-semibold hover:opacity-90 cursor-pointer disabled:opacity-60 disabled:cursor-wait">Run tests</button>
+            </div>
+          </div>
+          <div class="flex bg-surface-container-low">
+            <pre id="lineNums" class="select-none text-right text-outline font-mono py-3 pl-3 pr-2" style="font-size:12px;line-height:20px"></pre>
+            <textarea id="instrBox" wrap="off" spellcheck="false" class="flex-1 bg-transparent text-on-surface font-mono py-3 pr-3 resize-none overflow-auto" style="font-size:12px;line-height:20px;min-height:320px"></textarea>
+          </div>
+          <div class="p-3 text-outline font-code-sm text-code-sm">Edit the instructions, click Save changes, then Run tests again to see whether the change helped.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPARE VIEW -->
+    <section id="view-compare" class="hidden flex flex-col gap-4">
+      <div id="cmpEmpty" class="bg-surface-container-low rounded-xl p-10 text-center shadow-xl">
+        <span class="material-symbols-outlined text-primary text-[40px]">compare_arrows</span>
+        <div class="font-headline-md text-headline-md mt-2">Nothing to compare yet</div>
+        <p class="text-on-surface-variant mt-1">Run the tests, change the chatbot's instructions, then run the same tests again.</p>
+      </div>
+      <div id="cmpBody" class="hidden flex flex-col gap-4"></div>
+    </section>
+
+  </div>
+</main>
+
+<div id="toast" class="hidden fixed bottom-4 right-4 z-50 max-w-sm px-4 py-3 rounded-lg bg-surface-container-high border border-outline-variant text-on-surface shadow-xl"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
