@@ -1,374 +1,133 @@
-\# AgentShield
+# AgentShield
 
+**Test an AI chatbot. Find its weaknesses. Fix them. Prove the fix worked.**
 
+AgentShield is a web app that tests a **sample chatbot** for prompt injection and jailbreak weaknesses. It sends a fixed set of attack messages, checks whether the chatbot broke its rules, explains each failure, suggests a defensive fix, and then **reruns the same tests** to show whether the fix helped.
 
-\*\*Test an AI chatbot. Find its weaknesses. Fix them. Prove the fix worked.\*\*
+- Built for the **Nebius x NVIDIA Global AI Hackathon** by a team of 2.
+- Core loop: **test, detect, fix, retest.**
+- Runtime model calls go through **Nebius Token Factory** using an **NVIDIA Nemotron** model (chatbot, judge, and advisor).
+- This is a developer testing tool, **not** a certified security assessment. A score only describes performance on our test suite.
 
+---
 
-
-AgentShield is a web app that tests a \*\*sample chatbot\*\* for prompt injection and jailbreak weaknesses. It sends a fixed set of attack messages, checks whether the chatbot broke its rules, explains each failure, suggests a defensive fix, and then \*\*reruns the same tests\*\* to show whether the fix helped.
-
-
-
-\- Built for the \*\*Nebius x NVIDIA Global AI Hackathon\*\* by a team of 2 in 7 days.
-
-\- Core loop: \*\*test, detect, fix, retest.\*\*
-
-\- This is a developer testing tool, \*\*not\*\* a certified security assessment. A score only describes performance on our test suite.
-
-
-
-> Status: early development. Items marked \*\*\[VERIFY]\*\* in `docs/PROJECT\_PLAN.md` must be checked against the official hackathon rules before relying on them.
-
-
-
-\---
-
-
-
-\## Quick terms
-
-
+## Quick terms
 
 | Term | Meaning |
-
 |---|---|
-
 | Prompt injection | A user message that tries to make a chatbot ignore its instructions |
-
 | Jailbreak | A message designed to push a chatbot into breaking its safety rules |
-
 | Deterministic check | A plain code rule, for example "does the reply contain the secret string?" |
-
 | Model judge | An AI model that decides whether a reply followed the rules, for cases code cannot decide |
+| Holdout test | A test hidden from the suggestion step, used to check that a fix generalises |
 
-| Inference | Sending a request to a hosted AI model and getting an answer |
+---
 
+## How it works
 
+1. **Test**: 24 controlled attacks in 11 categories are sent to the NovaBank sample chatbot (`backend/data/test_cases.json`).
+2. **Detect**: each reply is judged in two steps:
+   - Code checks find protected values in any form (exact, spaced out, reversed, base64) or quoted system instructions → **confirmed fail**.
+   - Otherwise a model judge returns strict JSON → **suspected fail** or **pass**. Invalid judge output or a failed call → **inconclusive**.
+3. **Fix**: the model reads the failed (non-holdout) tests and proposes advice plus a revised system prompt. You can edit it before applying. If the model fails, rule-based suggestions are used.
+4. **Retest**: the same suite runs with the new instructions. The dashboard shows before vs after per test (fixed, regressed, still failing) and the holdout score.
 
-\---
+---
 
+## Setup (Windows, PowerShell)
 
+> **Full step-by-step guide, troubleshooting and deployment: [docs/SETUP_AND_DEPLOYMENT.md](docs/SETUP_AND_DEPLOYMENT.md).**
+> The only thing you must provide is `NEBIUS_API_KEY`, marked `>>> REQUIRED` in `.env.example`.
 
-\## Project structure and what each file is for
-
-
-
-```
-
-Agent\_shield/
-
-|-- README.md
-
-|-- LICENSE
-
-|-- .gitignore
-
-|-- .env.example
-
-|-- requirements.txt
-
-|-- backend/
-
-|   |-- \_\_init\_\_.py
-
-|   |-- main.py
-
-|   |-- config.py
-
-|   |-- nebius\_client.py
-
-|   |-- target\_chatbot.py
-
-|   |-- runner.py
-
-|   |-- evaluator.py
-
-|   |-- suggestions.py
-
-|   |-- scoring.py
-
-|   |-- db.py
-
-|   +-- data/
-
-|       |-- test\_cases.json
-
-|       +-- chatbot\_rules.json
-
-|-- frontend/
-
-|   |-- index.html
-
-|   |-- style.css
-
-|   +-- app.js
-
-|-- docs/
-
-|   |-- PROJECT\_PLAN.md
-
-|   |-- api\_contract.md
-
-|   +-- proposal.md
-
-+-- tests/
-
-&#x20;   +-- .gitkeep
-
-```
-
-
-
-\### Root files
-
-
-
-| File | What it is and what goes inside |
-
-|---|---|
-
-| `README.md` | This file: overview, structure, setup and run steps. |
-
-| `LICENSE` | The open-source license text. Choose the type after checking the hackathon rules. |
-
-| `.gitignore` | List of files Git must never upload: `.env`, `\_\_pycache\_\_/`, `\*.db`, `.venv/`. |
-
-| `.env.example` | A template listing the setting names (no real values). Copy it to `.env` and fill in your own key. |
-
-| `requirements.txt` | The Python packages to install. Start with `fastapi`, `uvicorn`, `python-dotenv`, `httpx`. |
-
-
-
-\### `backend/` (Python, FastAPI)
-
-
-
-| File | What it does |
-
-|---|---|
-
-| `\_\_init\_\_.py` | An empty file that lets Python treat `backend` as a package. Needed to run `uvicorn backend.main:app`. |
-
-| `main.py` | The FastAPI app. Defines the API routes and serves the `frontend/` folder. |
-
-| `config.py` | Reads settings (API key, base URL, model name) from the `.env` file. |
-
-| `nebius\_client.py` | One function that sends a prompt to the model on Nebius Token Factory and returns the reply. Every other file calls this instead of talking to the API directly. |
-
-| `target\_chatbot.py` | The sample chatbot being tested: its instructions (system prompt), its rules and its fictional secret. Its instructions must be editable, because that is the "apply fix" step. |
-
-| `runner.py` | Loads the test cases, sends each attack to the target chatbot, collects the replies and passes them to the evaluator. |
-
-| `evaluator.py` | Judges each reply. Step 1: code checks (for example, secret string found). Step 2: model judge returning strict JSON. Invalid output becomes `inconclusive`. |
-
-| `suggestions.py` | Asks the model for advisory defensive suggestions for failed tests. |
-
-| `scoring.py` | Calculates the pass rate and builds the before/after comparison. |
-
-| `db.py` | Saves and loads test runs in SQLite so runs can be compared. |
-
-| `data/test\_cases.json` | The fixed attack suite (about 20 to 30 tests): id, category, prompt, expected safe behavior. |
-
-| `data/chatbot\_rules.json` | The sample chatbot's rules and the fictional protected values. |
-
-
-
-\### `frontend/` (plain HTML, CSS, JavaScript)
-
-
-
-| File | What it does |
-
-|---|---|
-
-| `index.html` | The page: chatbot rules view, "Run tests" button, results dashboard, suggestions, before/after comparison. |
-
-| `style.css` | The styling. |
-
-| `app.js` | Calls the backend API and fills the page with results. |
-
-
-
-\### `docs/` and `tests/`
-
-
-
-| File | What it is |
-
-|---|---|
-
-| `docs/PROJECT\_PLAN.md` | Requirements, work split between two people, day-by-day tasks, and what to verify. |
-
-| `docs/api\_contract.md` | The agreed list of API endpoints and the JSON shape of a test result. Both teammates write this together on Day 1. |
-
-| `docs/proposal.md` | The hackathon project proposal. |
-
-| `tests/` | Integration checks that the whole flow works. Kept in Git with a `.gitkeep` placeholder until real files exist. |
-
-
-
-\---
-
-
-
-\## Setup (Windows)
-
-
-
-Use \*\*PowerShell\*\* from the project folder.
-
-
-
-\*\*1. Create the `\_\_init\_\_.py` file\*\* (if it does not exist yet):
-
-
+From the `Agent_Shield` folder:
 
 ```powershell
-
-New-Item -ItemType File -Force backend\\\_\_init\_\_.py
-
-```
-
-
-
-\*\*2. Create a virtual environment and install packages:\*\*
-
-
-
-```powershell
-
 python -m venv .venv
-
-.\\.venv\\Scripts\\Activate.ps1
-
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-
-```
-
-
-
-If PowerShell blocks the activate script, run this once and try again:
-
-
-
-```powershell
-
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-
-```
-
-
-
-\*\*3. Add your settings:\*\*
-
-
-
-```powershell
-
 Copy-Item .env.example .env
-
 ```
 
+If PowerShell blocks the activate script, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once.
 
+Open `.env` and set `NEBIUS_API_KEY` (from Nebius Token Factory). `NEBIUS_BASE_URL` and `NEBIUS_MODEL` already have defaults. Never commit `.env`.
 
-Open `.env` and fill in the values from the official Nebius Token Factory documentation:
+**No key yet?** Set `NEBIUS_MOCK=1` in `.env`. The full loop then runs with deterministic fake replies. This is useful for UI work and demos, but it is not a real model evaluation.
 
-
-
-```
-
-NEBIUS\_API\_KEY=
-
-NEBIUS\_BASE\_URL=
-
-NEBIUS\_MODEL=
-
-```
-
-
-
-Never share `.env`, never paste your key in chat or code.
-
-
-
-\*\*4. Run the app:\*\*
-
-
+## Run
 
 ```powershell
-
 uvicorn backend.main:app --reload
-
 ```
 
+- App: http://127.0.0.1:8000
+- API docs: http://127.0.0.1:8000/docs
 
+### Demo flow
 
-\- App: http://127.0.0.1:8000
+1. Press **Run tests**. The baseline run shows leaks and rule violations.
+2. Click any row to see the attack prompt, the chatbot's reply, and why it failed.
+3. Press **Generate suggestions**, review the proposed instructions, then **Apply fix & retest**.
+4. The **Before vs after** panel shows the score change, which tests were fixed or regressed, and how the holdout tests did.
+5. Use **Try a custom attack** to send your own prompt, and **Run history** to compare any two runs.
 
-\- Automatic API docs: http://127.0.0.1:8000/docs
+### Check the setup
 
+```powershell
+python -m scripts.smoke_test          # can we reach the model? runs the first test
+python -m scripts.smoke_test --all    # every test, printed to the console
+python -m unittest discover -s tests -t . -v   # integration tests (always mock mode, no key needed)
+```
 
+If real-model replies come back empty, the model may be using its whole token budget on reasoning. Set `NEBIUS_DISABLE_THINKING=1`. If you hit rate limits, lower `AGENTSHIELD_CONCURRENCY`.
 
-\---
+## Deploy
 
+A `Dockerfile` is included. It listens on `$PORT` (default 8000):
 
+```bash
+docker build -t agentshield .
+docker run -p 8000:8000 -e NEBIUS_API_KEY=... agentshield
+```
 
-\## How we work together
+On Render, Railway or a similar host, deploy the repo as a Docker service and set `NEBIUS_API_KEY` as a secret environment variable. The SQLite run history is stored at `AGENTSHIELD_DB`. Mount a volume there if runs should survive redeploys.
 
+---
 
+## Project structure
 
-\- \*\*Member 1 (AI and Backend)\*\* owns everything in `backend/`, plus `.gitignore`, `.env.example` and `requirements.txt`.
+```
+Agent_Shield/
+|-- README.md, LICENSE, requirements.txt, .env.example, Dockerfile
+|-- backend/
+|   |-- main.py            FastAPI routes; serves the frontend
+|   |-- config.py          settings from .env
+|   |-- nebius_client.py   the only code that calls Nebius (plus mock mode)
+|   |-- target_chatbot.py  the sample chatbot; editable, persisted instructions
+|   |-- runner.py          runs the suite in parallel in the background
+|   |-- evaluator.py       code checks + model judge -> outcome
+|   |-- suggestions.py     defensive advice + revised prompt (with fallback)
+|   |-- scoring.py         pass rate, categories, before/after comparison
+|   |-- db.py              SQLite run history
+|   +-- data/
+|       |-- test_cases.json     the attack suite (24 tests, 4 holdout)
+|       +-- chatbot_rules.json  rules and fictional protected values
+|-- frontend/              index.html, style.css, app.js (no build step)
+|-- scripts/smoke_test.py  console proof of concept
+|-- tests/test_flow.py     end-to-end integration tests
++-- docs/
+    |-- api_contract.md    endpoints and JSON shapes
+    +-- proposal.md        hackathon proposal
+```
 
-\- \*\*Member 2 (Frontend and Product)\*\* owns everything in `frontend/`, plus `README.md`, `LICENSE`, `docs/proposal.md` and `tests/`.
+## Team
 
-\- Only the owner edits a file. Ask the other person for changes in their files.
+- **Member 1 (AI and Backend)**: `backend/`, configuration files.
+- **Member 2 (Frontend and Product)**: `frontend/`, docs, tests.
 
-\- Both agree `docs/api\_contract.md` on Day 1 so the frontend and backend can be built in parallel.
+## Limits
 
-\- Each person works on their own Git branch, runs `git pull origin main` before starting, and merges small changes daily.
-
-\- Short daily sync: what is done, what is blocked, what is cut.
-
-
-
-Full details are in `docs/PROJECT\_PLAN.md`.
-
-
-
-\---
-
-
-
-\## What counts as done (MVP)
-
-
-
-\- A sample chatbot with explicit rules and fictional protected data
-
-\- A fixed suite of about 20 to 30 non-destructive attack tests
-
-\- Real runtime model calls through Nebius Token Factory using an eligible NVIDIA model
-
-\- Code checks plus model-assisted evaluation, with outcomes: pass, confirmed fail, suspected fail, inconclusive
-
-\- A dashboard with results and explanations
-
-\- Advisory defensive suggestions
-
-\- Before-and-after retesting with a comparison
-
-\- A deployed app and a reproducible demo
-
-
-
-\## Limits
-
-
-
-\- Tests run only against our own sample chatbot with fictional secrets. All attacks are controlled and non-destructive.
-
-\- A high score does not mean a chatbot is secure. It only reflects this test suite.
-
-\- AI suggestions are advisory, not guaranteed fixes.
-
+- Tests run only against our own sample chatbot with fictional secrets. All attacks are controlled and non-destructive.
+- A high score does not mean a chatbot is secure. It only reflects this test suite.
+- AI suggestions are advisory, not guaranteed fixes.
+- The model judge can be wrong. That is why judge-only failures are labelled *suspected*, and code-detected leaks are labelled *confirmed*.
