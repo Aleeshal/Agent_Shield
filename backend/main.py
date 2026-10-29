@@ -144,3 +144,11 @@ if (FRONTEND / "index.html").exists():
     @app.get("/", include_in_schema=False)
     def index():
         return FileResponse(FRONTEND / "index.html")
+
+    @app.get("/app.js", include_in_schema=False)
+    def app_js():
+        return FileResponse(FRONTEND / "app.js")
+
+    @app.get("/style.css", include_in_schema=False)
+    def style_css():
+        return FileResponse(FRONTEND / "style.css")
