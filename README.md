@@ -55,6 +55,13 @@ AgentShield is a web app that tests a \*\*sample chatbot\*\* for prompt injectio
 
 ---
 
+## How AgentShield uses NVIDIA and Nebius
+
+- **Nebius Token Factory:** all model inference goes through `backend/nebius_client.py`, a single gateway to Token Factory. It powers three components: the target chatbot (`target_chatbot.py`), the AI judge in `evaluator.py`, and the defensive suggestions in `suggestions.py`.
+- **NVIDIA open-source model:** [MODEL NAME, e.g. a Nemotron variant] is set through the `NEBIUS_MODEL` variable in `.env`.
+- **Status:** the integration is implemented, but live end-to-end runs were blocked because Token Factory access was unavailable in our region before the deadline.
+- ----
+
 ## Setup (Windows, PowerShell)
 
 > **Full step-by-step guide, troubleshooting and deployment: [docs/SETUP_AND_DEPLOYMENT.md](docs/SETUP_AND_DEPLOYMENT.md).**
