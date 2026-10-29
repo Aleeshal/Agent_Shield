@@ -159,3 +159,7 @@ Agent_Shield/
 - A high score does not mean a chatbot is secure. It only reflects this test suite.
 - AI suggestions are advisory, not guaranteed fixes.
 - The model judge can be wrong. That is why judge-only failures are labelled *suspected*, and code-detected leaks are labelled *confirmed*.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
