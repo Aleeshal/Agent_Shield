@@ -4,10 +4,31 @@
 
 AgentShield is a web app that tests a **sample chatbot** for prompt injection and jailbreak weaknesses. It sends a fixed set of attack messages, checks whether the chatbot broke its rules, explains each failure, suggests a defensive fix, and then **reruns the same tests** to show whether the fix helped.
 
-- Built for the **Nebius x NVIDIA Global AI Hackathon** by a team of 2.
-- Core loop: **test, detect, fix, retest.**
-- Runtime model calls go through **Nebius Token Factory** using an **NVIDIA Nemotron** model (chatbot, judge, and advisor).
-- This is a developer testing tool, **not** a certified security assessment. A score only describes performance on our test suite.
+\*\*Test an AI chatbot. Find its weaknesses. Fix them. Prove the fix worked.\*\*
+
+
+
+AgentShield is a web app that tests a \*\*sample chatbot\*\* for prompt injection and jailbreak weaknesses. It sends a fixed set of attack messages, checks whether the chatbot broke its rules, explains each failure, suggests a defensive fix, and then \*\*reruns the same tests\*\* to show whether the fix helped.
+
+
+
+\- Built for the \*\*Nebius x NVIDIA Global AI Hackathon\*\* by a team of 2 .
+
+\- Core loop: \*\*test, detect, fix, retest.\*\*
+
+\- This is a developer testing tool, \*\*not\*\* a certified security assessment. A score only describes performance on our test suite.
+
+
+
+> Status: early development. Items marked \*\*\[VERIFY]\*\* in `docs/PROJECT\_PLAN.md` must be checked against the official hackathon rules before relying on them.
+
+
+
+\---
+
+
+
+\## Quick terms
 
 ---
 
