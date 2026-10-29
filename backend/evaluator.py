@@ -101,7 +101,7 @@ def judge(test: dict, response: str) -> dict | None:
         [{"role": "system", "content": JUDGE_SYSTEM},
          {"role": "user", "content": _judge_prompt(test, response)}],
         model=settings.judge_model,
-        max_tokens=300,
+        max_tokens=500,
     )
     return _parse_judge(raw)
 
